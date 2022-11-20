@@ -122,9 +122,17 @@ foreach( $results as $result )
     }
     echo '</tr>';
 }
+}
 
-
-
+//<?php foreach ($allmovies as $row):
+//  array_map('htmlentities', $row); ?/>
+//        <tr>
+//          <td class="info">
+//            <?php echo implode('</td><td class="info">', $row); ?/>
+//          </td>
+//        </tr>
+//        </?php endforeach; ?/>
+//-------------------------------------------------
 
   //$suppliers = array();
   //$customers = array();
@@ -149,7 +157,7 @@ foreach( $results as $result )
 //      }
 //    );
 //  }
-}
+//}
 
 
 if ($_GET) {
