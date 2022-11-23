@@ -1,36 +1,102 @@
-<?php function searchForId($id, $array) {
-   foreach ($array as $key => $val) {
-       if ($val['VIN'] === $id) {
-           return $val['MEDIAID'];
-       }
-   }
-   return null;
+<!DOCTYPE html>
+<?php
+//$results = SearchTitle($inputtit);
+
+$inputtit = "";
+if (isset($_GET['submit'])) {
+  $inputtit = htmlentities($_GET['mname']);
+  $inputres = SearchTitle($inputtit);
+}
+$results = SearchTitle($inputtit);
+
+function SearchTitle($inputtit)
+{
+
+$allmovies = array ();
+$curl_handle = curl_init();
+$url = "https://ghibliapi.herokuapp.com/films?limit=200";
+
+curl_setopt($curl_handle, CURLOPT_URL, $url);
+curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl_handle, CURLOPT_BINARYTRANSFER, true);
+$curl_data = curl_exec($curl_handle);
+curl_close($curl_handle);
+$response_data = json_decode($curl_data);
+$movie_data = $response_data;
+
+$i=0;
+foreach ($movie_data as $movie) {
+  if (stripos($movie->title, $inputtit) or (stripos($movie->title, $inputtit)) === 0) {
+    $allmovies[$i]['poster'] = '<img src= "' . $movie->image . '" />';
+    $allmovies[$i]['title'] = $movie->title;
+    $allmovies[$i]['runtime'] = $movie->running_time;
+    $allmovies[$i]['description'] = $movie->description;
+    $i=$i+1;
+  }
+}
+return $allmovies;
 }
 
-$array = array(
-  0=> array(
-    'CLIENTID' => 'GALLEY',
-    'VIN' => 'WBAFDEG2317MCB73388',
-    'MEDIAID' => '10011020061817-galley_082114-SDvcl-140880481613056500',
-    'DEALERNAME' => 'Demo',
-    'PUBLISHON' => '2014-08-28'
-    ),
-  1=> array(
-    'CLIENTID' => 'GALLEY',
-    'VIN' => 'WAULC68E74A053WE251',
-    'MEDIAID' => '10011020061817-galley_082114-SDvcl-140880482109709900',
-    'DEALERNAME' => 'Demo',
-    'PUBLISHON' => '2014-08-26'
-    ),
-  2=> array(
-    'CLIENTID' => 'GALLEY',
-    'VIN' => 'WAULC68E74A053WE251',
-    'MEDIAID' => '10011020061817-galley_082114-SDvcl-140880482109709900',
-    'DEALERNAME' => 'Demo',
-    'PUBLISHON' => '2014-08-26'
-    ),    
-  );
 
-$search = searchForId('WAULC68E74A053WE251', $array);
+?><style>
+table {
+  empty-cells: show
+}
 
-var_dump($search);?>
+img {
+  width: 200px
+}
+
+td {
+  border: 1px solid black
+}
+
+thead {
+  background-color: orange
+}
+</style>
+
+<body>
+<form action="api.php" method="get">
+  <table>
+    <thead>
+      <tr>
+        <th>Poster</th>
+        <th>Title</th>
+        <th>Runtime</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td><input type="submit" value="click" name="submit"></td>
+        <td>
+          <input type="text" placeholder="Movie title" id="mname" name="mname" >
+        </td>
+        <td>
+          <input type="number" step="1" placeholder="Runtime" id="movielength" name="mlength">
+        </td>
+        <td></td>
+
+      </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($results as $row):
+    array_map('htmlentities', $row); ?>
+          <tr>
+            <td class="info">
+              <?php echo implode('</td><td class="info">', $row); ?>
+            </td>
+          </tr>
+          <?php endforeach; ?>
+
+    </tbody>
+  </table>
+</form>
+</body>
+
+<?php
+
+
+
+
+
+?>
