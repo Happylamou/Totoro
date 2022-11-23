@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <?php
 //$results = SearchFun($inputtit);
-
+//==========================
+//Current problems, couldn't get returning to work, couldn't figure out why it runs twice
+//the search on the other hand does find the correct movies, by either filtering with one or two filters
+//==========================
 $inputtit = "";
 $inputlen = 0;
 $inputsym = "";
@@ -16,42 +19,7 @@ if (isset($_GET['submit'])) {
 
 
 $results = SearchFun($inputtit, $inputlen, $inputsym);
-function runtimesearch($inputlen,$inputsym,$movie,$i) {
-$movielen = array();
 
-  if ($inputsym === "1") {
-      if (intval($inputlen) > intval(trim($movie->running_time))) {
-        $movielen[$i]['poster'] = '<img src= "' . $movie->image . '" />';
-        $movielen[$i]['title'] = $movie->title;
-        $movielen[$i]['runtime'] = $movie->running_time;
-        $movielen[$i]['description'] = $movie->description;
-        $i = $i + 1;
-        echo "got less";
-        //var_dump($movielen);
-        echo $i;
-      }
-    } elseif ($inputsym === "2") {
-      if (intval($inputlen) < intval($movie->running_time)) {
-        $movielen[$i]['poster'] = '<img src= "' . $movie->image . '" />';
-        $movielen[$i]['title'] = $movie->title;
-        $movielen[$i]['runtime'] = $movie->running_time;
-        $movielen[$i]['description'] = $movie->description;
-        $i = $i + 1;
-        echo "got more";
-        echo $i;
-      }
-      else{
-        $movielen[$i]['poster'] = '<img src= "' . $movie->image . '" />';
-        $movielen[$i]['title'] = $movie->title;
-        $movielen[$i]['runtime'] = $movie->running_time;
-        $movielen[$i]['description'] = $movie->description;
-        $i = $i + 1;
-        echo "else";
-        echo $i;
-      }
-    }
-    return $movielen;
-  }
 function SearchFun($inputtit, $inputlen, $inputsym)
 {
 
@@ -67,47 +35,76 @@ function SearchFun($inputtit, $inputlen, $inputsym)
   $response_data = json_decode($curl_data);
   $movie_data = $response_data;
 
-  $i = 0;
-  
-    foreach ($movie_data as $movie) {
-      $textchk = stripos($movie->title, $inputtit);
-      if($inputtit===""){
-        if($inputlen !== ""){
-          runtimesearch($inputlen,$inputsym,$movie,$i);
-          }
-        echo "Empty txt";
-        //return $allmovies;
-      }
-      elseif ($textchk or $textchk === 0) {
-        if($inputlen !== ""){
-        runtimesearch($inputlen,$inputsym,$movie,$i);
-        }
-        echo "TEXT MATCH";
-        //return $allmovies;
-      }
 
-      elseif($textchk === false){
-        runtimesearch($inputlen,$inputsym,$movie,$i);
-        echo "no text matches";
-        //return $allmovies;
+  foreach ($movie_data as $movie) {
+    $textchk = stripos($movie->title, $inputtit);
+    if ($inputtit === "") {
+      if ($inputlen !== "") {
+        runtimesearch($inputlen, $inputsym, $movie);
       }
-
+      echo "Empty txt";
+      //return $allmovies;
+    } elseif ($textchk or $textchk === 0) {
+      if ($inputlen !== "") {
+        runtimesearch($inputlen, $inputsym, $movie);
+      }
+      echo "TEXT MATCH";
+      //return $allmovies;
+    } elseif ($textchk === false) {
+      runtimesearch($inputlen, $inputsym, $movie);
+      echo "no text matches";
+      //return $allmovies;
     }
-    
+  }
+
   return $allmovies;
 }
-  
 
+function runtimesearch($inputlen, $inputsym, $movie)
+{
+  $movielen = array();
+  $j = count($movielen);
+  if ($inputsym === "1") {
+    if (intval($inputlen) > intval(trim($movie->running_time))) {
+      $movielen[$j]['poster'] = '<img src= "' . $movie->image . '" />';
+      $movielen[$j]['title'] = $movie->title;
+      $movielen[$j]['runtime'] = $movie->running_time;
+      $movielen[$j]['description'] = $movie->description;
+      //$j = $j + 1;
+      echo "got less";
+      //var_dump($movielen);
+    }
+  } elseif ($inputsym === "2") {
+    if (intval($inputlen) < intval($movie->running_time)) {
+      $movielen[$j]['poster'] = '<img src= "' . $movie->image . '" />';
+      $movielen[$j]['title'] = $movie->title;
+      $movielen[$j]['runtime'] = $movie->running_time;
+      $movielen[$j]['description'] = $movie->description;
+      //$j = $j + 1;
+      echo "got more";
+    }
+  } else {
+    $movielen[$j]['poster'] = '<img src= "' . $movie->image . '" />';
+    $movielen[$j]['title'] = $movie->title;
+    $movielen[$j]['runtime'] = $movie->running_time;
+    $movielen[$j]['description'] = $movie->description;
 
-function titlesearch($inputtit,$movie_data) {
+    echo "|neither|";
+  }
+  $j = $j + 1;
+  echo "$j";
+  var_dump($movielen);
+  return $movielen;
+}
+
+function titlesearch($inputtit, $movie_data)
+{
   foreach ($movie_data as $movie) {
     if (stripos($movie->title, $inputtit) or (stripos($movie->title, $inputtit)) === 0) {
-      
-    }
-    elseif($inputtit===""){
 
-    }
-    else{
+    } elseif ($inputtit === "") {
+
+    } else {
 
     }
   }
