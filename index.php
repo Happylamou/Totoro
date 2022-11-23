@@ -1,43 +1,75 @@
 <!DOCTYPE html>
 <?php
+//$results = SearchFun($inputtit);
 
-$allmovies = array();
-
-// Initiate curl session in a variable (resource)
-$curl_handle = curl_init();
-
-$url = "https://ghibliapi.herokuapp.com/films?limit=200";
-
-// Set the curl URL option
-curl_setopt($curl_handle, CURLOPT_URL, $url);
-
-// This option will return data as a string instead of direct output
-curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($curl_handle, CURLOPT_BINARYTRANSFER, true);
-
-// Execute curl & store data in a variable
-$curl_data = curl_exec($curl_handle);
-//$image = curl_exec($curl_handle);
+$inputtit = "";
+$inputlen = 0;
+$inputsym = "";
+if (isset($_GET['submit'])) {
+  $inputtit = htmlentities($_GET['mname']);
+  $inputlen = htmlentities($_GET['mlength']);
+  $inputsym = htmlentities($_GET['symbols']);
+  $inputres = SearchFun($inputtit, $inputlen, $inputsym);
+  //echo $inputlen;
+  //echo $inputtit;
+}
 
 
-curl_close($curl_handle);
+$results = SearchFun($inputtit, $inputlen, $inputsym);
 
-// Decode JSON into PHP array
-$response_data = json_decode($curl_data);
+function SearchFun($inputtit, $inputlen, $inputsym)
+{
 
-// All movie data exists in 'data' object
-$movie_data = $response_data;
+  $allmovies = array();
+  $curl_handle = curl_init();
+  $url = "https://ghibliapi.herokuapp.com/films?limit=200";
 
+  curl_setopt($curl_handle, CURLOPT_URL, $url);
+  curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($curl_handle, CURLOPT_BINARYTRANSFER, true);
+  $curl_data = curl_exec($curl_handle);
+  curl_close($curl_handle);
+  $response_data = json_decode($curl_data);
+  $movie_data = $response_data;
 
-foreach ($movie_data as $index => $movie) {
-  $allmovies[$index]['poster'] = '<img src= "' . $movie->image . '" />';
-  $allmovies[$index]['title'] = $movie->title;
-  $allmovies[$index]['runtime'] = $movie->running_time;
-  $allmovies[$index]['description'] = $movie->description;
+  $i = 0;
+  foreach ($movie_data as $movie) {
+    if (stripos($movie->title, $inputtit) or (stripos($movie->title, $inputtit)) === 0) {
+
+      if ($inputlen === "" or $inputlen === $movie->running_time) {
+
+      } elseif ($inputsym === "1") {
+        if (intval($inputlen) > intval(trim($movie->running_time))) {
+          $allmovies[$i]['poster'] = '<img src= "' . $movie->image . '" />';
+          $allmovies[$i]['title'] = $movie->title;
+          $allmovies[$i]['runtime'] = $movie->running_time;
+          $allmovies[$i]['description'] = $movie->description;
+          $i = $i + 1;
+          echo "got less";
+        }
+      } elseif ($inputsym === "2") {
+        if (intval($inputlen) < intval($movie->running_time)) {
+          $allmovies[$i]['poster'] = '<img src= "' . $movie->image . '" />';
+          $allmovies[$i]['title'] = $movie->title;
+          $allmovies[$i]['runtime'] = $movie->running_time;
+          $allmovies[$i]['description'] = $movie->description;
+          $i = $i + 1;
+          echo "got more";
+        }
+      }
+
+    }
+    else{      $allmovies[$i]['poster'] = '<img src= "' . $movie->image . '" />';
+      $allmovies[$i]['title'] = $movie->title;
+      $allmovies[$i]['runtime'] = $movie->running_time;
+      $allmovies[$i]['description'] = $movie->description;
+      $i = $i + 1;
+      echo "got text";}
+  }
+  return $allmovies;
 }
 
 ?>
-
 <style>
   table {
     empty-cells: show
@@ -57,7 +89,7 @@ foreach ($movie_data as $index => $movie) {
 </style>
 
 <body>
-  <form action="index.php" method="post">
+  <form action="index.php" method="get">
     <table>
       <thead>
         <tr>
@@ -69,18 +101,23 @@ foreach ($movie_data as $index => $movie) {
         <tr>
           <td><input type="submit" value="click" name="submit"></td>
           <td>
-            <input type="text" placeholder="Movie title" id="moviename" name="mname">
+            <input type="text" placeholder="Movie title" id="mname" name="mname">
           </td>
           <td>
-            <input type="number" step="1" placeholder="Runtime" id="movielength" name="mlength">
+            <input type="number" step="1" placeholder="Runtime" id="mlength" name="mlength">
+            <select name="symbols" id="symbols">
+              <option value="" id="none" name="none">=</option>
+              <option value="1" id="less" name="less">less n></option>
+              <option value="2" id="more" name="more">more n<</option>
+            </select>
           </td>
           <td></td>
 
         </tr>
       </thead>
       <tbody>
-        <?php foreach ($allmovies as $row):
-  array_map('htmlentities', $row); ?>
+        <?php foreach ($results as $row):
+          array_map('htmlentities', $row); ?>
         <tr>
           <td class="info">
             <?php echo implode('</td><td class="info">', $row); ?>
@@ -92,16 +129,3 @@ foreach ($movie_data as $index => $movie) {
     </table>
   </form>
 </body>
-
-
-
-<?php
-function display()
-{
-
-}
-
-if (isset($_POST['submit'])) {
-  display();
-}
-?>

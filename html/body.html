@@ -19,3 +19,38 @@
     </tr>
 </table>
 
+foreach ($movie_data as $movie) {
+    if (stripos($movie->title, $inputtit) or (stripos($movie->title, $inputtit)) === 0) {
+
+      if ($inputlen === "" or $inputlen === $movie->running_time) {
+
+      } elseif ($inputsym === "1") {
+        if (intval($inputlen) > intval(trim($movie->running_time))) {
+          $allmovies[$i]['poster'] = '<img src= "' . $movie->image . '" />';
+          $allmovies[$i]['title'] = $movie->title;
+          $allmovies[$i]['runtime'] = $movie->running_time;
+          $allmovies[$i]['description'] = $movie->description;
+          $i = $i + 1;
+          echo "got less";
+        }
+      } elseif ($inputsym === "2") {
+        if (intval($inputlen) < intval($movie->running_time)) {
+          $allmovies[$i]['poster'] = '<img src= "' . $movie->image . '" />';
+          $allmovies[$i]['title'] = $movie->title;
+          $allmovies[$i]['runtime'] = $movie->running_time;
+          $allmovies[$i]['description'] = $movie->description;
+          $i = $i + 1;
+          echo "got more";
+        }
+      }
+
+    }
+    else{      $allmovies[$i]['poster'] = '<img src= "' . $movie->image . '" />';
+      $allmovies[$i]['title'] = $movie->title;
+      $allmovies[$i]['runtime'] = $movie->running_time;
+      $allmovies[$i]['description'] = $movie->description;
+      $i = $i + 1;
+      echo "got text";}
+  }
+  return $allmovies;
+}
