@@ -12,13 +12,8 @@ if (isset($_GET['submit'])) {
   $inputtit = htmlentities($_GET['mname']);
   $inputlen = htmlentities($_GET['mlength']);
   $inputsym = htmlentities($_GET['symbols']);
-  $inputres = SearchFun($inputtit, $inputlen, $inputsym);
-  //echo $inputlen;
-  //echo $inputtit;
+  $results = SearchFun($inputtit, $inputlen, $inputsym);
 }
-
-
-$results = SearchFun($inputtit, $inputlen, $inputsym);
 
 function SearchFun($inputtit, $inputlen, $inputsym)
 {
@@ -37,24 +32,14 @@ function SearchFun($inputtit, $inputlen, $inputsym)
 
 
   foreach ($movie_data as $movie) {
-    $textchk = stripos($movie->title, $inputtit);
-    if ($inputtit === "") {
       if ($inputlen !== "") {
-        runtimesearch($inputlen, $inputsym, $movie);
+        $matchRuntime = runtimesearch($inputlen, $inputsym, $movie);
+		if (!$matchRuntime) continue;
       }
-      echo "Empty txt";
-      //return $allmovies;
-    } elseif ($textchk or $textchk === 0) {
-      if ($inputlen !== "") {
-        runtimesearch($inputlen, $inputsym, $movie);
-      }
-      echo "TEXT MATCH";
-      //return $allmovies;
-    } elseif ($textchk === false) {
-      runtimesearch($inputlen, $inputsym, $movie);
-      echo "no text matches";
-      //return $allmovies;
-    }
+
+	 if (!empty($inputtit) and stripos($movie->title, $inputtit) === false ) continue;
+	
+	$allmovies[] = $movie;
   }
 
   return $allmovies;
@@ -62,51 +47,12 @@ function SearchFun($inputtit, $inputlen, $inputsym)
 
 function runtimesearch($inputlen, $inputsym, $movie)
 {
-  $movielen = array();
-  $j = count($movielen);
   if ($inputsym === "1") {
-    if (intval($inputlen) > intval(trim($movie->running_time))) {
-      $movielen[$j]['poster'] = '<img src= "' . $movie->image . '" />';
-      $movielen[$j]['title'] = $movie->title;
-      $movielen[$j]['runtime'] = $movie->running_time;
-      $movielen[$j]['description'] = $movie->description;
-      //$j = $j + 1;
-      echo "got less";
-      //var_dump($movielen);
-    }
+    return (intval($inputlen) > intval(trim($movie->running_time)));
   } elseif ($inputsym === "2") {
-    if (intval($inputlen) < intval($movie->running_time)) {
-      $movielen[$j]['poster'] = '<img src= "' . $movie->image . '" />';
-      $movielen[$j]['title'] = $movie->title;
-      $movielen[$j]['runtime'] = $movie->running_time;
-      $movielen[$j]['description'] = $movie->description;
-      //$j = $j + 1;
-      echo "got more";
-    }
+  	return (intval($inputlen) < intval($movie->running_time));
   } else {
-    $movielen[$j]['poster'] = '<img src= "' . $movie->image . '" />';
-    $movielen[$j]['title'] = $movie->title;
-    $movielen[$j]['runtime'] = $movie->running_time;
-    $movielen[$j]['description'] = $movie->description;
-
-    echo "|neither|";
-  }
-  $j = $j + 1;
-  echo "$j";
-  var_dump($movielen);
-  return $movielen;
-}
-
-function titlesearch($inputtit, $movie_data)
-{
-  foreach ($movie_data as $movie) {
-    if (stripos($movie->title, $inputtit) or (stripos($movie->title, $inputtit)) === 0) {
-
-    } elseif ($inputtit === "") {
-
-    } else {
-
-    }
+   return intval($inputlen) == intval(trim($movie->running_time));
   }
 }
 
@@ -157,15 +103,15 @@ function titlesearch($inputtit, $movie_data)
         </tr>
       </thead>
       <tbody>
-        <?php foreach ($results as $row):
-          array_map('htmlentities', $row); ?>
-        <tr>
-          <td class="info">
-            <?php echo implode('</td><td class="info">', $row); ?>
-          </td>
-        </tr>
-        <?php endforeach; ?>
-
+        <?php foreach ($results as $row) {
+			echo "<tr>
+				<td><img src='".$row->image."' /></td>
+				<td>".$row->title."</td>
+				<td>".$row->running_time."</td>
+				<td>".$row->description."</td>
+			</tr>";
+		}
+		?>
       </tbody>
     </table>
   </form>
